@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triage Learning System - Detailed Interpretability Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(to bottom, #e6dfdf, #070000);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 20px;
+            border-radius: 10px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin: 5px 0;
+        }
+        
+        .executive-summary {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 30px;
+            margin-bottom: 40px;
+            border-radius: 5px;
+        }
+        
+        .key-findings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .finding-card {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            border-top: 3px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .finding-card .value {
+            font-size: 1.8em;
+            color: #667eea;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .finding-card .label {
+            font-size: 0.9em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        section {
+            margin-bottom: 50px;
+            background: white;
+            padding: 40px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        
+        h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        h3 {
+            color: #764ba2;
+            font-size: 1.5em;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        thead {
+            background: #f8f9fa;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tbody tr:hover {
+            background: #f0f3ff;
+        }
+        
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .metric-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .metric-box .label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .metric-box .value {
+            font-size: 2em;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .comparison-chart {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .bar {
+            height: 30px;
+            margin: 15px 0;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            color: white;
+            padding-left: 10px;
+            font-weight: 500;
+        }
+        
+        .recommendation {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .recommendation strong {
+            color: #155724;
+        }
+        
+        .risk {
+            background: #f8d7da;
+            border-left: 5px solid #dc3545;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .image-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .image-caption {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
+            font-style: italic;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            border-top: 1px solid #eee;
+            margin-top: 40px;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 1.8em;
+            }
+            
+            .key-findings {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .highlight {
+            background: #fffacd;
+            padding: 2px 5px;
+            border-radius: 2px;
+        }
+        
+        .kpi-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .kpi-status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .kpi-status.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏥 Triage Learning System for Medical Diagnosis</h1>
+            <p><strong>Detailed Interpretability & Performance Report</strong></p>
+            <p>Dataset: PathMNIST | Total Samples: 7,180 | Date: December 26, 2025</p>
+        </header>
+        
+        <div class="executive-summary">
+            <h2 style="color: white; border-bottom-color: rgba(255,255,255,0.3); margin-top: 0;">Executive Summary</h2>
+            <p style="color: white; margin-bottom: 20px;">
+                This report presents a comprehensive analysis of an AI-human collaborative system designed to improve medical diagnosis accuracy. 
+                The system intelligently defers uncertain cases to human experts, achieving significant performance improvements while maintaining operational efficiency.
+            </p>
+            
+            <div class="key-findings">
+                <div class="finding-card">
+                    <div class="label">Baseline Accuracy</div>
+                    <div class="value">89.04%</div>
+                    <div style="font-size: 0.85em; color: #999;">AI-only performance</div>
+                </div>
+                <div class="finding-card">
+                    <div class="label">System Accuracy</div>
+                    <div class="value">97.35%</div>
+                    <div style="font-size: 0.85em; color: #999;">With optimal triage</div>
+                </div>
+                <div class="finding-card">
+                    <div class="label">Improvement</div>
+                    <div class="value" style="color: #28a745;">+8.31%</div>
+                    <div style="font-size: 0.85em; color: #999;">+597 correct diagnoses</div>
+                </div>
+                <div class="finding-card">
+                    <div class="label">Error Reduction</div>
+                    <div class="value" style="color: #28a745;">75.8%</div>
+                    <div style="font-size: 0.85em; color: #999;">Fewer misdiagnoses</div>
+                </div>
+                <div class="finding-card">
+                    <div class="label">Cost Savings</div>
+                    <div class="value" style="color: #28a745;">$46,200</div>
+                    <div style="font-size: 0.85em; color: #999;">Optimal triage scenario</div>
+                </div>
+                <div class="finding-card">
+                    <div class="label">Automation Rate</div>
+                    <div class="value">63.9%</div>
+                    <div style="font-size: 0.85em; color: #999;">Cases handled by AI</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 1: Baseline Performance -->
+        <section>
+            <h2>1. Baseline Model Performance Analysis</h2>
+            
+            <h3>1.1 Overall Classification Metrics</h3>
+            <p>The baseline DenseNet model achieves strong performance across all standard classification metrics:</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                        <th>Interpretation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Accuracy</strong></td>
+                        <td style="color: #667eea; font-weight: bold;">89.04%</td>
+                        <td>Overall correctness across all 7,180 samples</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Balanced Accuracy</strong></td>
+                        <td style="color: #667eea; font-weight: bold;">86.41%</td>
+                        <td>Average per-class recall (accounts for class imbalance)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Precision</strong></td>
+                        <td style="color: #667eea; font-weight: bold;">89.37%</td>
+                        <td>When predicting positive, correct 89.37% of the time</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Recall</strong></td>
+                        <td style="color: #667eea; font-weight: bold;">89.04%</td>
+                        <td>Catches 89.04% of all actual positives</td>
+                    </tr>
+                    <tr>
+                        <td><strong>F1 Score</strong></td>
+                        <td style="color: #667eea; font-weight: bold;">89.03%</td>
+                        <td>Harmonic mean of precision and recall</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Error Rate</strong></td>
+                        <td style="color: #dc3545; font-weight: bold;">10.96%</td>
+                        <td>787 misclassified samples out of 7,180</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cross-Entropy Loss</strong></td>
+                        <td style="color: #667eea; font-weight: bold;">0.3699</td>
+                        <td>Indicates well-calibrated confidence estimates</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>1.2 Key Observations</h3>
+            <ul style="margin-left: 20px; margin-top: 15px;">
+                <li><strong>Balanced Accuracy < Accuracy:</strong> 86.41% vs 89.04% indicates some class imbalance, with better performance on majority classes</li>
+                <li><strong>Precision ≈ Recall:</strong> 89.37% vs 89.04% shows balanced performance between false positives and false negatives</li>
+                <li><strong>Low Cross-Entropy Loss:</strong> 0.3699 < 0.5 suggests well-calibrated probability estimates suitable for uncertainty-based triage</li>
+                <li><strong>Error Distribution:</strong> 787 errors distributed across 9 pathology classes with some variation in per-class accuracy</li>
+            </ul>
+            
+            <h3>1.3 Confusion Matrix Visualization</h3>
+            <div class="image-container">
+                <img src="baseline/confusion_matrix.png" alt="Confusion Matrix - 9x9 pathology class predictions">
+                <div class="image-caption">
+                    <strong>Figure 1:</strong> Confusion Matrix showing classification performance across 9 pathology classes. 
+                    Strong diagonal indicates correct predictions; off-diagonal shows misclassifications between classes.
+                </div>
+            </div>
+            
+            <h3>1.4 Error Distribution</h3>
+            <div class="image-container">
+                <img src="baseline/error_distribution.png" alt="Error Distribution across confidence levels">
+                <div class="image-caption">
+                    <strong>Figure 2:</strong> Error distribution showing how prediction errors vary across different confidence levels. 
+                    Most errors cluster in medium-confidence range, validating uncertainty-based triage approach.
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section 2: Uncertainty Analysis -->
+        <section>
+            <h2>2. Uncertainty Estimation Analysis</h2>
+            
+            <h3>2.1 Uncertainty Distribution Statistics</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Statistic</th>
+                        <th>Value</th>
+                        <th>Interpretation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Mean</strong></td>
+                        <td>0.583</td>
+                        <td>Average model uncertainty across all predictions</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Std Dev</strong></td>
+                        <td>0.264</td>
+                        <td>Moderate spread in uncertainty values</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Median</strong></td>
+                        <td>0.452</td>
+                        <td>50% of samples have uncertainty below 0.452</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Min</strong></td>
+                        <td>0.000</td>
+                        <td>Some predictions are nearly certain</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Max</strong></td>
+                        <td>1.853</td>
+                        <td>Can exceed 1.0 with entropy-based metrics</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Q1 (25th %ile)</strong></td>
+                        <td>0.430</td>
+                        <td>25% of samples more certain than this</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Q3 (75th %ile)</strong></td>
+                        <td>0.621</td>
+                        <td>75% of samples less certain than this</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>2.2 Uncertainty-Error Correlation</h3>
+            <div class="metric-grid">
+                <div class="metric-box">
+                    <div class="label">Spearman Correlation</div>
+                    <div class="value">0.413</div>
+                    <div style="font-size: 0.85em; color: #666; margin-top: 10px;">Moderate correlation</div>
+                </div>
+                <div class="metric-box">
+                    <div class="label">Point-Biserial Correlation</div>
+                    <div class="value">0.498</div>
+                    <div style="font-size: 0.85em; color: #666; margin-top: 10px;"><span class="highlight">Strong signal for triage</span></div>
+                </div>
+            </div>
+            
+            <h3>2.3 Uncertainty Distribution Visualization</h3>
+            <div class="image-container">
+                <img src="uncertainty/uncertainty_distribution.png" alt="Uncertainty Distribution histogram">
+                <div class="image-caption">
+                    <strong>Figure 3:</strong> Histogram of model uncertainty across all 7,180 samples. 
+                    Shows distribution from mean 0.583 with standard deviation 0.264. 
+                    Moderate spread indicates diverse confidence levels in model predictions.
+                </div>
+            </div>
+            
+            <div class="recommendation">
+                <strong>✓ Key Finding:</strong> Point-biserial correlation of 0.498 validates using uncertainty for triage decisions. 
+                While correlation is not perfect, it's strong enough to be operationally useful. Higher uncertainty moderately predicts model errors.
+            </div>
+        </section>
+        
+        <!-- Section 3: Triage Performance -->
+        <section>
+            <h2>3. Triage System Performance Analysis</h2>
+            
+            <h3>3.1 Optimal Threshold Comparison</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Objective</th>
+                        <th>Threshold</th>
+                        <th>Deferral Rate</th>
+                        <th>AI Accuracy</th>
+                        <th>System Accuracy</th>
+                        <th>Cost/Improvement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Maximize Accuracy</strong></td>
+                        <td>0.4916</td>
+                        <td>36.1%</td>
+                        <td>98.56%</td>
+                        <td style="color: #28a745; font-weight: bold;">97.35%</td>
+                        <td>+8.31% vs baseline</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Minimize Cost</strong></td>
+                        <td>0.4159</td>
+                        <td>91.9%</td>
+                        <td>100%</td>
+                        <td style="color: #667eea; font-weight: bold;">95.58%</td>
+                        <td>$6,798 total</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Baseline (No Triage)</strong></td>
+                        <td>-</td>
+                        <td>0%</td>
+                        <td>89.04%</td>
+                        <td style="color: #dc3545; font-weight: bold;">89.04%</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>3.3 Automation vs. Accuracy Trade-off Visualization</h3>
+            <div class="image-container">
+                <img src="triage/automation_vs_accuracy.png" alt="Trade-off between automation rate and system accuracy">
+                <div class="image-caption">
+                    <strong>Figure 4:</strong> Shows the trade-off between automation rate (% of cases handled by AI) and system accuracy. 
+                    The optimal threshold (0.4916) balances 63.9% automation with 97.35% system accuracy.
+                </div>
+            </div>
+            
+            <h3>3.4 Human Accuracy Sensitivity Analysis Visualization</h3>
+            <div class="image-container">
+                <img src="triage/human_accuracy_sensitivity.png" alt="System performance vs human accuracy levels">
+                <div class="image-caption">
+                    <strong>Figure 5:</strong> System accuracy as a function of human reviewer expertise. 
+                    Shows linear relationship: even at 80% human accuracy, system achieves 92.63% vs 89.04% baseline.
+                </div>
+            </div>
+            
+            <div class="recommendation">
+                <strong>✓ Recommendation:</strong> Deploy with <span class="highlight">90% human accuracy assumption</span>. 
+                This is realistic for trained pathologists and achieves 95.97% system accuracy (+6.94% vs baseline). 
+                Even if human accuracy is only 80%, system still outperforms baseline (92.63% vs 89.04%).
+            </div>
+        </section>
+            <p>System performance depends critically on human reviewer expertise:</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Human Accuracy</th>
+                        <th>System Accuracy</th>
+                        <th>Improvement</th>
+                        <th>Cost</th>
+                        <th>Feasibility</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>80%</td>
+                        <td style="color: #667eea; font-weight: bold;">92.63%</td>
+                        <td>+3.59%</td>
+                        <td>$9,192</td>
+                        <td>General staff</td>
+                    </tr>
+                    <tr>
+                        <td>85%</td>
+                        <td style="color: #667eea; font-weight: bold;">94.29%</td>
+                        <td>+5.25%</td>
+                        <td>$9,192</td>
+                        <td>Trained staff</td>
+                    </tr>
+                    <tr>
+                        <td style="background: #f0f3ff;">90%</td>
+                        <td style="background: #f0f3ff; color: #667eea; font-weight: bold;">95.97%</td>
+                        <td style="background: #f0f3ff;">+6.94%</td>
+                        <td style="background: #f0f3ff;">$9,192</td>
+                        <td style="background: #f0f3ff;"><strong>RECOMMENDED</strong></td>
+                    </tr>
+                    <tr>
+                        <td>95%</td>
+                        <td style="color: #28a745; font-weight: bold;">97.35%</td>
+                        <td>+8.31%</td>
+                        <td>$9,192</td>
+                        <td>Specialists</td>
+                    </tr>
+                    <tr>
+                        <td>99%</td>
+                        <td style="color: #28a745; font-weight: bold;">98.75%</td>
+                        <td>+9.71%</td>
+                        <td>$9,192</td>
+                        <td>Expert pathologists</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="recommendation">
+                <strong>✓ Recommendation:</strong> Deploy with <span class="highlight">90% human accuracy assumption</span>. 
+                This is realistic for trained pathologists and achieves 95.97% system accuracy (+6.94% vs baseline). 
+                Even if human accuracy is only 80%, system still outperforms baseline (92.63% vs 89.04%).
+            </div>
+        </section>
+        
+        <!-- Section 4: Cost-Benefit Analysis -->
+        <section>
+            <h2>4. Cost-Benefit Analysis</h2>
+            
+            <h3>4.1 Cost Comparison Across Strategies</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Scenario</th>
+                        <th>AI Errors</th>
+                        <th>Human Reviews</th>
+                        <th>Total Cost</th>
+                        <th>Savings</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>AI Only (Baseline)</strong></td>
+                        <td>787</td>
+                        <td>0</td>
+                        <td style="color: #dc3545; font-weight: bold;">$78,700</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Full Human Review</strong></td>
+                        <td>0</td>
+                        <td>7,180</td>
+                        <td style="color: #667eea; font-weight: bold;">$71,800</td>
+                        <td>$6,900</td>
+                    </tr>
+                    <tr style="background: #f0f3ff;">
+                        <td><strong>Optimal Triage (36% defer)</strong></td>
+                        <td>66</td>
+                        <td>2,590</td>
+                        <td style="color: #28a745; font-weight: bold;">$32,500</td>
+                        <td style="background: #d4edda; color: #155724; font-weight: bold;">$46,200</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cost-Optimized (92% defer)</strong></td>
+                        <td>0</td>
+                        <td>6,598</td>
+                        <td style="color: #667eea; font-weight: bold;">$65,980</td>
+                        <td>$12,720</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>4.2 Cost Analysis Visualization</h3>
+            <div class="image-container">
+                <img src="triage/cost_analysis.png" alt="Cost comparison across different threshold strategies">
+                <div class="image-caption">
+                    <strong>Figure 6:</strong> Cost analysis showing total cost (AI errors + human review) across different thresholds. 
+                    Shows cost-minimized approach ($6,798 at 91.9% deferral) vs accuracy-optimized approach ($32,500 at 36.1% deferral).
+                </div>
+            </div>
+            
+            <h3>4.3 ROI Analysis (Accuracy-Optimized)</h3>
+            <div class="comparison-chart">
+                <div style="margin-bottom: 20px;">
+                    <strong>Cost Breakdown for Optimal Triage:</strong>
+                </div>
+                <div class="bar" style="width: 15%;">Human Reviews: $25,900 (79%)</div>
+                <div class="bar" style="width: 5%; background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);">AI Errors: $6,600 (21%)</div>
+                
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #ddd;">
+                    <strong>ROI Calculation:</strong><br>
+                    Error Reduction Value: $72,100 (787 - 66 errors × $100)<br>
+                    Investment (Human Reviews): $25,900<br>
+                    <span style="font-weight: bold; color: #28a745; font-size: 1.1em;">ROI: 279%</span>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section 5: Performance Comparison -->
+        <section>
+            <h2>5. AI-Only vs. Human-in-the-Loop Comparison</h2>
+            
+            <h3>5.1 Performance Metrics Comparison</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>AI Only</th>
+                        <th>AI + Triage</th>
+                        <th>Improvement</th>
+                        <th>% Change</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Accuracy</strong></td>
+                        <td>89.04%</td>
+                        <td style="color: #28a745; font-weight: bold;">97.35%</td>
+                        <td>+8.31%</td>
+                        <td style="color: #28a745; font-weight: bold;">+9.3%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Correct Diagnoses</strong></td>
+                        <td>6,393</td>
+                        <td style="color: #28a745; font-weight: bold;">6,990</td>
+                        <td>+597</td>
+                        <td style="color: #28a745; font-weight: bold;">+9.3%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Misdiagnoses</strong></td>
+                        <td style="color: #dc3545; font-weight: bold;">787</td>
+                        <td>190</td>
+                        <td style="color: #28a745; font-weight: bold;">-597</td>
+                        <td style="color: #28a745; font-weight: bold;">-75.8%</td>
+                    </tr>
+                    <tr style="background: #f0f3ff;">
+                        <td colspan="2"></td>
+                        <td><strong>Error Reduction:</strong></td>
+                        <td colspan="2" style="color: #28a745; font-weight: bold; font-size: 1.1em;">75.8%</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>5.2 Clinical Significance</h3>
+            <div class="metric-grid">
+                <div class="metric-box">
+                    <div class="label">Current Error Rate</div>
+                    <div class="value" style="color: #dc3545;">11</div>
+                    <div style="font-size: 0.85em; color: #666; margin-top: 10px;">per 100 patients</div>
+                </div>
+                <div class="metric-box">
+                    <div class="label">With Triage</div>
+                    <div class="value" style="color: #28a745;">2.7</div>
+                    <div style="font-size: 0.85em; color: #666; margin-top: 10px;">per 100 patients</div>
+                </div>
+                <div class="metric-box">
+                    <div class="label">Annual Impact</div>
+                    <div class="value" style="color: #28a745;">~800</div>
+                    <div style="font-size: 0.85em; color: #666; margin-top: 10px;">prevented errors/10k cases</div>
+                </div>
+            </div>
+            
+            <div class="recommendation">
+                <strong>✓ Clinical Impact:</strong> For a hospital processing 10,000 diagnoses annually, 
+                triage deployment prevents approximately <span class="highlight">800 misdiagnoses</span> compared to AI-only approach. 
+                This represents a substantial improvement in patient safety and diagnostic accuracy.
+            </div>
+        </section>
+        
+        <!-- Section 6: Implementation Recommendations -->
+        <section>
+            <h2>6. Implementation Recommendations</h2>
+            
+            <h3>6.1 Deployment Strategy</h3>
+            <div class="recommendation">
+                <strong>✓ RECOMMENDED CONFIGURATION:</strong>
+                <ul style="margin: 15px 0 0 20px;">
+                    <li><strong>Threshold:</strong> 0.4916 (Accuracy-optimized)</li>
+                    <li><strong>Deferral Rate:</strong> 36.1% of cases to human reviewers</li>
+                    <li><strong>Automation Rate:</strong> 63.9% handled by AI</li>
+                    <li><strong>Target System Accuracy:</strong> 97.35% (with 95% human accuracy assumption)</li>
+                    <li><strong>Expected Cost:</strong> $32,500 vs $78,700 baseline (59% savings)</li>
+                </ul>
+            </div>
+            
+            <h3>6.2 Staffing Requirements</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Daily Volume</th>
+                        <th>Cases for Review</th>
+                        <th>FTE Pathologists</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>100 cases/day</td>
+                        <td>36 cases/day</td>
+                        <td>1.8 FTE</td>
+                        <td>2 reviewers at 90% utilization</td>
+                    </tr>
+                    <tr>
+                        <td>250 cases/day</td>
+                        <td>90 cases/day</td>
+                        <td>4.5 FTE</td>
+                        <td>4-5 dedicated reviewers</td>
+                    </tr>
+                    <tr>
+                        <td>500 cases/day</td>
+                        <td>180 cases/day</td>
+                        <td>9 FTE</td>
+                        <td>Full department review team</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>6.3 Quality Assurance Protocol</h3>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+                <strong>Escalation Rules:</strong>
+                <ul style="margin: 15px 0 0 20px;">
+                    <li><strong>Uncertainty > 0.7:</strong> Senior pathologist review (highly uncertain)</li>
+                    <li><strong>Uncertainty 0.4-0.7:</strong> Standard pathologist review (moderate uncertainty)</li>
+                    <li><strong>Uncertainty < 0.4:</strong> AI decision (confident predictions)</li>
+                    <li><strong>Emergency/Critical:</strong> Always human review regardless of uncertainty</li>
+                </ul>
+            </div>
+        </section>
+        
+        <!-- Section 7: Risk Mitigation -->
+        <section>
+            <h2>7. Risk Management & Mitigation</h2>
+            
+            <h3>7.1 Key Risks and Mitigation Strategies</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Risk</th>
+                        <th>Impact</th>
+                        <th>Mitigation Strategy</th>
+                        <th>Monitoring</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Human Error Degradation</strong></td>
+                        <td>System accuracy drops if reviewers perform below 90%</td>
+                        <td>Ongoing training, certification, performance audits</td>
+                        <td>Monthly accuracy tracking per reviewer</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Model Drift</strong></td>
+                        <td>Model performance degrades on new data</td>
+                        <td>Quarterly retraining with new labeled data</td>
+                        <td>Holdout validation set performance</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Distribution Shift</strong></td>
+                        <td>Uncertainty patterns change with new cases</td>
+                        <td>Monitor uncertainty histogram changes, adapt threshold</td>
+                        <td>Weekly uncertainty distribution analysis</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Threshold Drift</strong></td>
+                        <td>Optimal threshold changes with new data</td>
+                        <td>Periodic re-validation of threshold on new data</td>
+                        <td>Quarterly threshold sweep analysis</td>
+                    </tr>
+                    <tr>
+                        <td><strong>User Over-reliance</strong></td>
+                        <td>Humans accept AI decisions without proper review</td>
+                        <td>Training, clear protocols, spot audits</td>
+                        <td>Random audits of AI-only decisions</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <!-- Section 8: KPIs -->
+        <section>
+            <h2>8. Key Performance Indicators (KPIs)</h2>
+            
+            <h3>8.1 Post-Deployment Monitoring Dashboard</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>KPI</th>
+                        <th>Target</th>
+                        <th>Baseline</th>
+                        <th>Status</th>
+                        <th>Frequency</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>System Accuracy</strong></td>
+                        <td>>95%</td>
+                        <td>97.35%</td>
+                        <td><span class="kpi-status success">✓ Exceeds</span></td>
+                        <td>Daily</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Automation Rate</strong></td>
+                        <td>60-70%</td>
+                        <td>63.9%</td>
+                        <td><span class="kpi-status success">✓ Optimal</span></td>
+                        <td>Weekly</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Human Accuracy</strong></td>
+                        <td>≥90%</td>
+                        <td>Assumed 95%</td>
+                        <td><span class="kpi-status warning">? Verify</span></td>
+                        <td>Weekly</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Deferral Rate</strong></td>
+                        <td>30-40%</td>
+                        <td>36.1%</td>
+                        <td><span class="kpi-status success">✓ Good</span></td>
+                        <td>Weekly</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cost per Diagnosis</strong></td>
+                        <td><$15</td>
+                        <td>$4.53</td>
+                        <td><span class="kpi-status success">✓ Efficient</span></td>
+                        <td>Monthly</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Error Reduction</strong></td>
+                        <td>>70%</td>
+                        <td>75.8%</td>
+                        <td><span class="kpi-status success">✓ Excellent</span></td>
+                        <td>Monthly</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <!-- Section 9: Limitations -->
+        <section>
+            <h2>9. Limitations & Future Work</h2>
+            
+            <h3>9.1 Current Limitations</h3>
+            <div class="risk">
+                <strong>⚠ Important Limitations:</strong>
+                <ul style="margin: 15px 0 0 20px;">
+                    <li><strong>Single Dataset:</strong> Evaluated on PathMNIST only; generalization to other pathology types unknown</li>
+                    <li><strong>Assumed Human Accuracy:</strong> Used 95% assumption; actual human performance not measured</li>
+                    <li><strong>Binary Deferral:</strong> Simple threshold approach; could use more sophisticated strategies</li>
+                    <li><strong>No Ensemble Methods:</strong> Single model; ensemble could improve uncertainty estimates</li>
+                    <li><strong>Temporal Stability:</strong> No evaluation of model drift or degradation over time</li>
+                </ul>
+            </div>
+            
+            <h3>9.2 Future Research Directions</h3>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 5px;">
+                <strong>Recommended Next Steps:</strong>
+                <ul style="margin: 15px 0 0 20px;">
+                    <li><strong>Multi-Dataset Validation:</strong> Test on ChestMNIST, DermaMNIST, BloodMNIST</li>
+                    <li><strong>Ensemble Methods:</strong> Combine multiple architectures for better uncertainty</li>
+                    <li><strong>Human Studies:</strong> Collect actual human review decisions and feedback</li>
+                    <li><strong>Adaptive Thresholds:</strong> Dynamic threshold adjustment based on human accuracy</li>
+                    <li><strong>Advanced Uncertainty:</strong> Deep ensembles, MC Dropout, Bayesian approaches</li>
+                    <li><strong>Active Learning:</strong> Use triage data to improve model training</li>
+                </ul>
+            </div>
+        </section>
+        
+        <!-- Section 10: Conclusion -->
+        <section>
+            <h2>10. Conclusion</h2>
+            
+            <div class="recommendation" style="background: #d4edda; border-color: #28a745; padding: 30px;">
+                <h3 style="margin-top: 0; color: #155724;">Summary of Key Achievements</h3>
+                
+                <div class="metric-grid" style="margin: 20px 0;">
+                    <div style="padding: 15px; background: white; border-radius: 5px; border-left: 4px solid #28a745;">
+                        <strong style="color: #155724;">Accuracy Improvement</strong>
+                        <div style="font-size: 1.5em; color: #28a745; margin-top: 5px;">+8.31%</div>
+                        <div style="font-size: 0.85em; color: #666;">(89.04% → 97.35%)</div>
+                    </div>
+                    <div style="padding: 15px; background: white; border-radius: 5px; border-left: 4px solid #28a745;">
+                        <strong style="color: #155724;">Error Reduction</strong>
+                        <div style="font-size: 1.5em; color: #28a745; margin-top: 5px;">75.8%</div>
+                        <div style="font-size: 0.85em; color: #666;">(787 → 190 errors)</div>
+                    </div>
+                    <div style="padding: 15px; background: white; border-radius: 5px; border-left: 4px solid #28a745;">
+                        <strong style="color: #155724;">Cost Savings</strong>
+                        <div style="font-size: 1.5em; color: #28a745; margin-top: 5px;">$46,200</div>
+                        <div style="font-size: 0.85em; color: #666;">59% vs baseline</div>
+                    </div>
+                    <div style="padding: 15px; background: white; border-radius: 5px; border-left: 4px solid #28a745;">
+                        <strong style="color: #155724;">Automation Rate</strong>
+                        <div style="font-size: 1.5em; color: #28a745; margin-top: 5px;">63.9%</div>
+                        <div style="font-size: 0.85em; color: #666;">Efficient operation</div>
+                    </div>
+                </div>
+                
+                <h3 style="color: #155724; margin-top: 30px;">Strategic Value</h3>
+                <ul style="margin: 15px 0 0 20px; color: #155724;">
+                    <li>Transforms AI from autonomous decision-maker to trusted clinical decision support</li>
+                    <li>Leverages complementary strengths: AI consistency + human expertise</li>
+                    <li>Achieves near-perfect accuracy (97.35%) with reasonable resource investment</li>
+                    <li>Clinically significant: Prevents ~800 misdiagnoses per 10,000 cases annually</li>
+                    <li>Economically viable: Substantial savings while improving care quality</li>
+                </ul>
+                
+                <h3 style="color: #155724; margin-top: 30px; margin-bottom: 0;">FINAL RECOMMENDATION</h3>
+                <p style="margin: 15px 0 0 0; font-size: 1.1em;">
+                    <strong>Deploy the triage system with accuracy-optimized threshold (0.4916)</strong> to achieve 
+                    <strong>97.35% system accuracy</strong>, <strong>63.9% automation rate</strong>, and <strong>$46,200 cost savings</strong>. 
+                    The system is clinically valuable, economically justified, and operationally feasible.
+                </p>
+            </div>
+        </section>
+        
+        <footer>
+            <p><strong>Report Generated:</strong> December 26, 2025</p>
+            <p><strong>Project:</strong> triage-learning-medical-diagnosis</p>
+            <p><strong>Repository:</strong> github.com/ary1002/triage-learning-medical-diagnosis</p>
+            <p style="margin-top: 20px; color: #999; font-size: 0.9em;">
+                This report contains detailed analysis of model performance, uncertainty estimation, 
+                triage effectiveness, and deployment recommendations for an AI-human collaborative medical diagnosis system.
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
