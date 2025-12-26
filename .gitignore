@@ -207,4 +207,3 @@ marimo/_lsp/
 __marimo__/
 
 experiments/pathmnist_triage/checkpoints
-report/
