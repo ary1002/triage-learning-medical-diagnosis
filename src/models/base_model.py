@@ -13,12 +13,23 @@ class BaseModel(nn.Module, ABC):
     """
     Abstract base class for all models
     Provides common functionality for classification with uncertainty
+
+    Args:
+        num_classes: Number of output classes
+        dropout_rate: Dropout in classifier / head where applicable
+        dropout_p_mc: Default MC-dropout probability (subclasses may use dedicated layers)
     """
-    
-    def __init__(self, num_classes: int, dropout_rate: float = 0.5):
+
+    def __init__(
+        self,
+        num_classes: int,
+        dropout_rate: float = 0.5,
+        dropout_p_mc: float = 0.5,
+    ):
         super().__init__()
         self.num_classes = num_classes
         self.dropout_rate = dropout_rate
+        self.dropout_p_mc = dropout_p_mc
         self.dropout_enabled = False
         
     @abstractmethod

@@ -11,6 +11,7 @@ Supports:
 from typing import Dict, List, Optional, Tuple
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torchvision.models as models
 import logging
 from .base_model import BaseModel
@@ -64,12 +65,9 @@ class DenseNetClassifier(BaseModel):
         Raises:
             ValueError: If variant is not supported
         """
-        super().__init__(
-            num_classes=num_classes,
-            dropout_rate=dropout_rate,
-            dropout_p_mc=dropout_p_mc,
-        )
-        
+        super().__init__(num_classes=num_classes, dropout_rate=dropout_rate)
+        self.dropout_p_mc = dropout_p_mc
+
         if variant not in self.SUPPORTED_VARIANTS:
             raise ValueError(
                 f"Unsupported DenseNet variant '{variant}'. "
@@ -86,8 +84,24 @@ class DenseNetClassifier(BaseModel):
             "densenet169": models.densenet169,
             "densenet201": models.densenet201,
         }
-        
-        self.backbone = model_dict[variant](pretrained=pretrained)
+        _fn = model_dict[variant]
+        weights = None
+        if pretrained:
+            wmap = {
+                "densenet121": getattr(models, "DenseNet121_Weights", None),
+                "densenet169": getattr(models, "DenseNet169_Weights", None),
+                "densenet201": getattr(models, "DenseNet201_Weights", None),
+            }
+            W = wmap.get(variant)
+            if W is not None and hasattr(W, "DEFAULT"):
+                weights = W.DEFAULT
+        try:
+            if weights is not None:
+                self.backbone = _fn(weights=weights)
+            else:
+                self.backbone = _fn(pretrained=pretrained)
+        except TypeError:
+            self.backbone = _fn(pretrained=pretrained)
         self.feature_dim = feature_dim or 1024
         
         logger.info(
@@ -106,12 +120,37 @@ class DenseNetClassifier(BaseModel):
         )
         
         # For MC Dropout
-        self.mc_dropout = nn.Dropout(p=dropout_p_mc)
-    
+        self.mc_dropout = nn.Dropout(p=self.dropout_p_mc)
+        # torchvision DenseNet uses fixed 2x2 transition pools; tiny inputs (e.g. 28x28 PathMNIST)
+        # can reach 1x1 maps and crash. Upsample below this threshold to a resolution that is
+        # still safe for the backbone but smaller than 224 to limit VRAM (training scales ~HW).
+        self._densenet_min_spatial = 64
+        self._densenet_target_size = (128, 128)
+        self._did_log_upscale = False
+
+    def _spatially_safe_input(self, x: torch.Tensor) -> torch.Tensor:
+        h, w = x.shape[2], x.shape[3]
+        if min(h, w) < self._densenet_min_spatial:
+            if not self._did_log_upscale:
+                logger.info(
+                    "DenseNet: upsampling input from %sx%s to %s for torchvision backbone compatibility",
+                    h,
+                    w,
+                    self._densenet_target_size,
+                )
+                self._did_log_upscale = True
+            return F.interpolate(
+                x,
+                size=self._densenet_target_size,
+                mode="bilinear",
+                align_corners=False,
+            )
+        return x
+
     def _adapt_input_channels(self, num_channels: int) -> None:
         """
         Adapt first convolutional layer to accept different number of input channels.
-        
+
         Args:
             num_channels: Desired number of input channels
         """
@@ -163,7 +202,8 @@ class DenseNetClassifier(BaseModel):
             - logits: Class predictions of shape (batch_size, num_classes)
             - features: Feature representations of shape (batch_size, feature_dim)
         """
-        # Extract features from backbone
+        # Extract features from backbone (upscale tiny inputs for torchvision DenseNet)
+        x = self._spatially_safe_input(x)
         features = self.backbone.features(x)
         features = torch.nn.functional.adaptive_avg_pool2d(features, (1, 1))
         features = torch.flatten(features, 1)
@@ -183,6 +223,7 @@ class DenseNetClassifier(BaseModel):
         Returns:
             Feature tensor of shape (batch_size, feature_dim)
         """
+        x = self._spatially_safe_input(x)
         features = self.backbone.features(x)
         features = torch.nn.functional.adaptive_avg_pool2d(features, (1, 1))
         features = torch.flatten(features, 1)

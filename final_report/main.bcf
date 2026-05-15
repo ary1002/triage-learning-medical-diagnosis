@@ -172,7 +172,7 @@
     </bcf:option>
     <bcf:option type="singlevalued">
       <bcf:key>sortingtemplatename</bcf:key>
-      <bcf:value>nty</bcf:value>
+      <bcf:value>none</bcf:value>
     </bcf:option>
     <bcf:option type="singlevalued">
       <bcf:key>sortsets</bcf:key>
@@ -2248,4 +2248,238 @@
       <bcf:entrytype>incollection</bcf:entrytype>
       <bcf:entrytype>suppcollection</bcf:entrytype>
       <bcf:entrytype>inreference</bcf:entrytype>
-      <bcf:constraint type="man
+      <bcf:constraint type="mandatory">
+        <bcf:field>author</bcf:field>
+        <bcf:field>editor</bcf:field>
+        <bcf:field>title</bcf:field>
+        <bcf:field>booktitle</bcf:field>
+      </bcf:constraint>
+    </bcf:constraints>
+    <bcf:constraints>
+      <bcf:entrytype>dataset</bcf:entrytype>
+      <bcf:constraint type="mandatory">
+        <bcf:field>title</bcf:field>
+      </bcf:constraint>
+    </bcf:constraints>
+    <bcf:constraints>
+      <bcf:entrytype>manual</bcf:entrytype>
+      <bcf:constraint type="mandatory">
+        <bcf:field>title</bcf:field>
+      </bcf:constraint>
+    </bcf:constraints>
+    <bcf:constraints>
+      <bcf:entrytype>misc</bcf:entrytype>
+      <bcf:entrytype>software</bcf:entrytype>
+      <bcf:constraint type="mandatory">
+        <bcf:field>title</bcf:field>
+      </bcf:constraint>
+    </bcf:constraints>
+    <bcf:constraints>
+      <bcf:entrytype>online</bcf:entrytype>
+      <bcf:constraint type="mandatory">
+        <bcf:field>title</bcf:field>
+        <bcf:fieldor>
+          <bcf:field>url</bcf:field>
+          <bcf:field>doi</bcf:field>
+          <bcf:field>eprint</bcf:field>
+        </bcf:fieldor>
+      </bcf:constraint>
+    </bcf:constraints>
+    <bcf:constraints>
+      <bcf:entrytype>patent</bcf:entrytype>
+      <bcf:constraint type="mandatory">
+        <bcf:field>author</bcf:field>
+        <bcf:field>title</bcf:field>
+        <bcf:field>number</bcf:field>
+      </bcf:constraint>
+    </bcf:constraints>
+    <bcf:constraints>
+      <bcf:entrytype>periodical</bcf:entrytype>
+      <bcf:constraint type="mandatory">
+        <bcf:field>editor</bcf:field>
+        <bcf:field>title</bcf:field>
+      </bcf:constraint>
+    </bcf:constraints>
+    <bcf:constraints>
+      <bcf:entrytype>proceedings</bcf:entrytype>
+      <bcf:entrytype>mvproceedings</bcf:entrytype>
+      <bcf:constraint type="mandatory">
+        <bcf:field>title</bcf:field>
+      </bcf:constraint>
+    </bcf:constraints>
+    <bcf:constraints>
+      <bcf:entrytype>inproceedings</bcf:entrytype>
+      <bcf:constraint type="mandatory">
+        <bcf:field>author</bcf:field>
+        <bcf:field>title</bcf:field>
+        <bcf:field>booktitle</bcf:field>
+      </bcf:constraint>
+    </bcf:constraints>
+    <bcf:constraints>
+      <bcf:entrytype>report</bcf:entrytype>
+      <bcf:constraint type="mandatory">
+        <bcf:field>author</bcf:field>
+        <bcf:field>title</bcf:field>
+        <bcf:field>type</bcf:field>
+        <bcf:field>institution</bcf:field>
+      </bcf:constraint>
+    </bcf:constraints>
+    <bcf:constraints>
+      <bcf:entrytype>thesis</bcf:entrytype>
+      <bcf:constraint type="mandatory">
+        <bcf:field>author</bcf:field>
+        <bcf:field>title</bcf:field>
+        <bcf:field>type</bcf:field>
+        <bcf:field>institution</bcf:field>
+      </bcf:constraint>
+    </bcf:constraints>
+    <bcf:constraints>
+      <bcf:entrytype>unpublished</bcf:entrytype>
+      <bcf:constraint type="mandatory">
+        <bcf:field>author</bcf:field>
+        <bcf:field>title</bcf:field>
+      </bcf:constraint>
+    </bcf:constraints>
+    <bcf:constraints>
+      <bcf:constraint type="data" datatype="isbn">
+        <bcf:field>isbn</bcf:field>
+      </bcf:constraint>
+      <bcf:constraint type="data" datatype="issn">
+        <bcf:field>issn</bcf:field>
+      </bcf:constraint>
+      <bcf:constraint type="data" datatype="ismn">
+        <bcf:field>ismn</bcf:field>
+      </bcf:constraint>
+      <bcf:constraint type="data" datatype="pattern" pattern="(?:sf|sm|sn|pf|pm|pn|pp)">
+        <bcf:field>gender</bcf:field>
+      </bcf:constraint>
+    </bcf:constraints>
+  </bcf:datamodel>
+  <!-- CITATION DATA -->
+  <!-- SECTION 0 -->
+  <bcf:bibdata section="0">
+    <bcf:datasource type="file" datatype="bibtex" glob="false">references.bib</bcf:datasource>
+  </bcf:bibdata>
+  <bcf:section number="0">
+    <bcf:citekey order="1" intorder="1">yang2021medmnist</bcf:citekey>
+    <bcf:citekey order="2" intorder="1">kather2019predicting</bcf:citekey>
+    <bcf:citekey order="3" intorder="1">wang2017chestx</bcf:citekey>
+    <bcf:citekey order="4" intorder="1">tschandl2018ham10000</bcf:citekey>
+    <bcf:citekey order="5" intorder="1">gulshan2016development</bcf:citekey>
+    <bcf:citekey order="6" intorder="1">esteva2017dermatologist</bcf:citekey>
+    <bcf:citekey order="7" intorder="1">leape1994error</bcf:citekey>
+    <bcf:citekey order="8" intorder="1">raab2005clinical</bcf:citekey>
+    <bcf:citekey order="9" intorder="1">gal2016dropout</bcf:citekey>
+    <bcf:citekey order="10" intorder="1">lakshminarayanan2017simple</bcf:citekey>
+    <bcf:citekey order="11" intorder="1">guo2017calibration</bcf:citekey>
+    <bcf:citekey order="12" intorder="1">selvaraju2017grad</bcf:citekey>
+    <bcf:citekey order="13" intorder="1">yang2021medmnist</bcf:citekey>
+    <bcf:citekey order="14" intorder="1">krizhevsky2012imagenet</bcf:citekey>
+    <bcf:citekey order="15" intorder="1">he2016deep</bcf:citekey>
+    <bcf:citekey order="16" intorder="1">huang2017densely</bcf:citekey>
+    <bcf:citekey order="17" intorder="1">tan2019efficientnet</bcf:citekey>
+    <bcf:citekey order="18" intorder="1">dosovitskiy2020image</bcf:citekey>
+    <bcf:citekey order="19" intorder="1">caron2021emerging</bcf:citekey>
+    <bcf:citekey order="20" intorder="1">raghu2019transfusion</bcf:citekey>
+    <bcf:citekey order="21" intorder="1">howard2018universal</bcf:citekey>
+    <bcf:citekey order="22" intorder="1">yang2021medmnist</bcf:citekey>
+    <bcf:citekey order="23" intorder="1">kather2019predicting</bcf:citekey>
+    <bcf:citekey order="24" intorder="1">wang2017chestx</bcf:citekey>
+    <bcf:citekey order="25" intorder="1">tschandl2018ham10000</bcf:citekey>
+    <bcf:citekey order="26" intorder="1">buda2018systematic</bcf:citekey>
+    <bcf:citekey order="27" intorder="1">lin2017focal</bcf:citekey>
+    <bcf:citekey order="28" intorder="1">esteva2017dermatologist</bcf:citekey>
+    <bcf:citekey order="29" intorder="1">campanella2019clinical</bcf:citekey>
+    <bcf:citekey order="30" intorder="1">kather2019predicting</bcf:citekey>
+    <bcf:citekey order="31" intorder="1">blundell2015weight</bcf:citekey>
+    <bcf:citekey order="32" intorder="1">gal2016dropout</bcf:citekey>
+    <bcf:citekey order="33" intorder="1">leibig2017leveraging</bcf:citekey>
+    <bcf:citekey order="34" intorder="1">roy2019bayesian</bcf:citekey>
+    <bcf:citekey order="35" intorder="1">lakshminarayanan2017simple</bcf:citekey>
+    <bcf:citekey order="36" intorder="1">ovadia2019can</bcf:citekey>
+    <bcf:citekey order="37" intorder="1">ovadia2019can</bcf:citekey>
+    <bcf:citekey order="38" intorder="1">sensoy2018evidential</bcf:citekey>
+    <bcf:citekey order="39" intorder="1">liu2020simple</bcf:citekey>
+    <bcf:citekey order="40" intorder="1">angelopoulos2021gentle</bcf:citekey>
+    <bcf:citekey order="41" intorder="1">chow1970optimum</bcf:citekey>
+    <bcf:citekey order="42" intorder="1">geifman2017selective</bcf:citekey>
+    <bcf:citekey order="43" intorder="1">madras2018predict</bcf:citekey>
+    <bcf:citekey order="44" intorder="1">mozannar2020consistent</bcf:citekey>
+    <bcf:citekey order="45" intorder="1">verma2022calibrated</bcf:citekey>
+    <bcf:citekey order="46" intorder="1">okati2021differentiable</bcf:citekey>
+    <bcf:citekey order="47" intorder="1">sendak2020human</bcf:citekey>
+    <bcf:citekey order="48" intorder="1">reyes2020interpretability</bcf:citekey>
+    <bcf:citekey order="49" intorder="1">tschandl2020human</bcf:citekey>
+    <bcf:citekey order="50" intorder="1">rajpurkar2022ai</bcf:citekey>
+    <bcf:citekey order="51" intorder="1">fernandes2024use</bcf:citekey>
+    <bcf:citekey order="52" intorder="1">goddard2012automation</bcf:citekey>
+    <bcf:citekey order="53" intorder="1">cai2019hello</bcf:citekey>
+    <bcf:citekey order="54" intorder="1">simonyan2013deep</bcf:citekey>
+    <bcf:citekey order="55" intorder="1">springenberg2014striving</bcf:citekey>
+    <bcf:citekey order="56" intorder="1">sundararajan2017axiomatic</bcf:citekey>
+    <bcf:citekey order="57" intorder="1">zhou2016learning</bcf:citekey>
+    <bcf:citekey order="58" intorder="1">selvaraju2017grad</bcf:citekey>
+    <bcf:citekey order="59" intorder="1">chattopadhay2018grad</bcf:citekey>
+    <bcf:citekey order="60" intorder="1">rajpurkar2017chexnet</bcf:citekey>
+    <bcf:citekey order="61" intorder="1">esteva2017dermatologist</bcf:citekey>
+    <bcf:citekey order="62" intorder="1">rudin2019stop</bcf:citekey>
+    <bcf:citekey order="63" intorder="1">adebayo2018sanity</bcf:citekey>
+    <bcf:citekey order="64" intorder="1">kim2018interpretability</bcf:citekey>
+    <bcf:citekey order="65" intorder="1">lucieri2022explainability</bcf:citekey>
+    <bcf:citekey order="66" intorder="1">guo2017calibration</bcf:citekey>
+    <bcf:citekey order="67" intorder="1">naeini2015obtaining</bcf:citekey>
+    <bcf:citekey order="68" intorder="1">brier1950verification</bcf:citekey>
+    <bcf:citekey order="69" intorder="1">platt1999probabilistic</bcf:citekey>
+    <bcf:citekey order="70" intorder="1">guo2017calibration</bcf:citekey>
+    <bcf:citekey order="71" intorder="1">kull2019beyond</bcf:citekey>
+    <bcf:citekey order="72" intorder="1">lakshminarayanan2017simple</bcf:citekey>
+    <bcf:citekey order="73" intorder="1">nixon2019measuring</bcf:citekey>
+    <bcf:citekey order="74" intorder="1">jiang2012calibrating</bcf:citekey>
+    <bcf:citekey order="75" intorder="1">ovadia2019can</bcf:citekey>
+    <bcf:citekey order="76" intorder="1">yang2021medmnist</bcf:citekey>
+    <bcf:citekey order="77" intorder="1">kather2019predicting</bcf:citekey>
+    <bcf:citekey order="78" intorder="1">kather2019predicting</bcf:citekey>
+    <bcf:citekey order="79" intorder="1">wang2017chestx</bcf:citekey>
+    <bcf:citekey order="80" intorder="1">rajpurkar2017chexnet</bcf:citekey>
+    <bcf:citekey order="81" intorder="1">tschandl2018ham10000</bcf:citekey>
+    <bcf:citekey order="82" intorder="1">mcnemar1947note</bcf:citekey>
+    <bcf:citekey order="83" intorder="1">he2016deep</bcf:citekey>
+    <bcf:citekey order="84" intorder="1">huang2017densely</bcf:citekey>
+    <bcf:citekey order="85" intorder="1">tan2019efficientnet</bcf:citekey>
+    <bcf:citekey order="86" intorder="1">dosovitskiy2020image</bcf:citekey>
+    <bcf:citekey order="87" intorder="1">gal2016dropout</bcf:citekey>
+    <bcf:citekey order="88" intorder="1">guo2017calibration</bcf:citekey>
+    <bcf:citekey order="89" intorder="1">guo2017calibration</bcf:citekey>
+    <bcf:citekey order="90" intorder="1">selvaraju2017grad</bcf:citekey>
+    <bcf:citekey order="91" intorder="1">leibig2017leveraging</bcf:citekey>
+    <bcf:citekey order="92" intorder="1">leibig2017leveraging</bcf:citekey>
+    <bcf:citekey order="93" intorder="1">mozannar2020consistent</bcf:citekey>
+    <bcf:citekey order="94" intorder="1">leibig2017leveraging</bcf:citekey>
+    <bcf:citekey order="95" intorder="1">tschandl2020human</bcf:citekey>
+    <bcf:citekey order="96" intorder="1">guo2017calibration</bcf:citekey>
+    <bcf:citekey order="97" intorder="1">tan2019efficientnet</bcf:citekey>
+    <bcf:citekey order="98" intorder="1">goddard2012automation</bcf:citekey>
+    <bcf:citekey order="99" intorder="1">tschandl2018ham10000</bcf:citekey>
+    <bcf:citekey order="100" intorder="1">mozannar2020consistent</bcf:citekey>
+    <bcf:citekey order="101" intorder="1">angelopoulos2021gentle</bcf:citekey>
+  </bcf:section>
+  <!-- SORTING TEMPLATES -->
+  <bcf:sortingtemplate name="none">
+    <bcf:sort order="1">
+      <bcf:sortitem order="1">citeorder</bcf:sortitem>
+    </bcf:sort>
+    <bcf:sort order="2">
+      <bcf:sortitem order="1">intciteorder</bcf:sortitem>
+    </bcf:sort>
+  </bcf:sortingtemplate>
+  <!-- DATALISTS -->
+  <bcf:datalist section="0"
+                name="none/global//global/global"
+                type="entry"
+                sortingtemplatename="none"
+                sortingnamekeytemplatename="global"
+                labelprefix=""
+                uniquenametemplatename="global"
+                labelalphanametemplatename="global">
+  </bcf:datalist>
+</bcf:controlfile>

@@ -123,7 +123,7 @@ class CollaborationMetrics:
         Args:
             ai_predictions: AI model predictions (N,)
             defer_decisions: Binary deferral decisions (N,)
-            labels: Ground truth labels (N,)
+            labels: Ground truth labels (N~,)
             critical_classes: List of critical class indices that must be detected
         
         Returns:

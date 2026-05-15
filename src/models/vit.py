@@ -72,12 +72,9 @@ class VisionTransformerClassifier(BaseModel):
         Raises:
             ValueError: If variant is not supported
         """
-        super().__init__(
-            num_classes=num_classes,
-            dropout_rate=dropout_rate,
-            dropout_p_mc=dropout_p_mc,
-        )
-        
+        super().__init__(num_classes=num_classes, dropout_rate=dropout_rate)
+        self.dropout_p_mc = dropout_p_mc
+
         if variant not in self.SUPPORTED_VARIANTS:
             raise ValueError(
                 f"Unsupported ViT variant '{variant}'. "
@@ -102,13 +99,14 @@ class VisionTransformerClassifier(BaseModel):
             f"num_classes={num_classes}, feature_dim={self.feature_dim}"
         )
         
-        # Load model using timm
+        # Load model using timm (img_size matches MedMNIST 28 or full-res training)
         self.backbone = timm.create_model(
             variant,
             pretrained=pretrained,
             in_chans=num_channels,
             num_classes=0,  # Remove classification head to get features
             global_pool="avg",
+            img_size=image_size,
         )
         
         # Add classification head
@@ -118,7 +116,7 @@ class VisionTransformerClassifier(BaseModel):
         )
         
         # For MC Dropout
-        self.mc_dropout = nn.Dropout(p=dropout_p_mc)
+        self.mc_dropout = nn.Dropout(p=self.dropout_p_mc)
         
         # Store original model for attention extraction
         self._original_model = timm.create_model(
@@ -126,6 +124,7 @@ class VisionTransformerClassifier(BaseModel):
             pretrained=pretrained,
             in_chans=num_channels,
             num_classes=num_classes,
+            img_size=image_size,
         )
     
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:

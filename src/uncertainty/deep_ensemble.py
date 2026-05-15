@@ -379,3 +379,6 @@ class DeepEnsemble:
         """String representation."""
         trained_count = len(self.trained_models)
         return f"DeepEnsemble(num_models={self.num_models}, trained={trained_count})"
+
+
+DeepEnsembleUncertainty = DeepEnsemble

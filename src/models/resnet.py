@@ -35,15 +35,27 @@ class ResNetClassifier(BaseModel):
         
         # Load backbone
         if variant == 'resnet18':
-            self.backbone = models.resnet18(pretrained=pretrained)
+            backbone_fn = models.resnet18
+            W = getattr(models, "ResNet18_Weights", None)
         elif variant == 'resnet34':
-            self.backbone = models.resnet34(pretrained=pretrained)
+            backbone_fn = models.resnet34
+            W = getattr(models, "ResNet34_Weights", None)
         elif variant == 'resnet50':
-            self.backbone = models.resnet50(pretrained=pretrained)
+            backbone_fn = models.resnet50
+            W = getattr(models, "ResNet50_Weights", None)
         elif variant == 'resnet101':
-            self.backbone = models.resnet101(pretrained=pretrained)
+            backbone_fn = models.resnet101
+            W = getattr(models, "ResNet101_Weights", None)
         else:
             raise ValueError(f"Unknown ResNet variant: {variant}")
+        weights = W.DEFAULT if (pretrained and W is not None and hasattr(W, "DEFAULT")) else None
+        try:
+            if weights is not None:
+                self.backbone = backbone_fn(weights=weights)
+            else:
+                self.backbone = backbone_fn(pretrained=pretrained)
+        except TypeError:
+            self.backbone = backbone_fn(pretrained=pretrained)
         
         # Get feature dimension
         num_features = self.backbone.fc.in_features

@@ -73,12 +73,9 @@ class EfficientNetClassifier(BaseModel):
         Raises:
             ValueError: If variant is not supported
         """
-        super().__init__(
-            num_classes=num_classes,
-            dropout_rate=dropout_rate,
-            dropout_p_mc=dropout_p_mc,
-        )
-        
+        super().__init__(num_classes=num_classes, dropout_rate=dropout_rate)
+        self.dropout_p_mc = dropout_p_mc
+
         if variant not in self.SUPPORTED_VARIANTS:
             raise ValueError(
                 f"Unsupported EfficientNet variant '{variant}'. "
@@ -112,7 +109,7 @@ class EfficientNetClassifier(BaseModel):
         )
         
         # For MC Dropout
-        self.mc_dropout = nn.Dropout(p=dropout_p_mc)
+        self.mc_dropout = nn.Dropout(p=self.dropout_p_mc)
     
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """

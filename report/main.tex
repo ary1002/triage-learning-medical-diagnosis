@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[10pt,a4paper]{article}
 
 % Packages
 \usepackage[utf8]{inputenc}
@@ -121,7 +121,7 @@ Patna -- 801103, India\\
 % =================================================
 \section*{CERTIFICATE}
 \addcontentsline{toc}{section}{Certificate}
-
+\large
 This is to certify that the M.Tech project work titled
 \textbf{``Triage Learning: Human–AI Collaboration in Medical Diagnosis''},
 submitted by \textbf{Shanu Prakash}, in partial
@@ -158,7 +158,7 @@ Place: Patna
 
 \section*{Abstract}
 \addcontentsline{toc}{section}{Abstract}
-
+\normalsize
 Medical diagnostic errors remain a persistent challenge in healthcare, with misdiagnoses contributing to significant patient morbidity and mortality. While deep learning models have demonstrated impressive performance in medical image classification tasks, their deployment in clinical settings is hindered by the lack of uncertainty quantification and the inability to recognize when predictions may be unreliable. This work presents a comprehensive framework for uncertainty-aware triage learning that intelligently combines artificial intelligence predictions with human expert review to optimize diagnostic accuracy while maintaining operational efficiency. Using the PathMNIST dataset of histopathology images containing 7,180 tissue samples across 9 pathology classes, we trained a ResNet18 model that achieved a baseline accuracy of 89.04\%. We implemented Monte Carlo Dropout for uncertainty estimation, which demonstrated a moderate correlation (point-biserial correlation coefficient of 0.498) between model uncertainty and prediction errors, validating uncertainty as an effective signal for triage decisions. By developing a threshold-based deferral policy that routes high-uncertainty cases to simulated human experts, the system achieved a remarkable 97.35\% accuracy at the optimal threshold, representing an improvement of 8.31 percentage points over the AI-only baseline. This improvement corresponds to a 75.8\% reduction in misdiagnoses, decreasing from 787 to 190 errors. The optimal configuration defers 36.1\% of cases to human review while maintaining a 63.9\% automation rate, demonstrating practical feasibility for clinical deployment. Sensitivity analysis across varying levels of human expertise (80\% to 99\% accuracy) confirmed the robustness of the approach, with the system outperforming the AI-only baseline even with relatively modest human performance. Cost-benefit analysis revealed potential savings of \$46,200 under realistic operational assumptions, highlighting the economic viability of the approach. This research contributes a validated methodology for integrating uncertainty quantification into medical AI systems, provides empirical evidence for the effectiveness of human-AI collaboration in diagnostic workflows, and establishes a comprehensive evaluation framework that can be extended to other medical imaging modalities and clinical decision-support applications. All code, configurations, and trained models are submitted alongside this report. 
 
 \clearpage
@@ -498,7 +498,6 @@ Future work will validate findings on additional medical imaging modalities incl
 
 The transparent communication of uncertainty through triage addresses key barriers to AI adoption including lack of trust and concerns about reliability. By explicitly acknowledging when the model is uncertain and routing such cases for verification, the system demonstrates appropriate epistemic humility. This framework for responsible integration preserves human oversight while capturing automation benefits, establishing a foundation for safer and more effective medical AI deployment.
 
-\section{References}
 \printbibliography
 
 \end{document}

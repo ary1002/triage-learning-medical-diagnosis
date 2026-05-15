@@ -124,6 +124,28 @@ class CalibrationMetrics:
         return mce
     
     @staticmethod
+    def compute_brier_score(
+        predictions: np.ndarray,
+        labels: np.ndarray,
+    ) -> float:
+        """
+        Multiclass Brier score: mean squared error between one-hot labels and probs.
+        
+        Args:
+            predictions: (N, num_classes) probability distribution (rows sum to ~1)
+            labels: (N,) integer class indices
+        
+        Returns:
+            Scalar Brier score in [0, 2] (lower is better)
+        """
+        n = len(labels)
+        num_classes = predictions.shape[1]
+        y = np.zeros((n, num_classes), dtype=np.float64)
+        y[np.arange(n), labels.astype(np.int64)] = 1.0
+        p = np.clip(predictions.astype(np.float64), 0.0, 1.0)
+        return float(np.mean(np.sum((p - y) ** 2, axis=1)))
+    
+    @staticmethod
     def compute_reliability_diagram(
         predictions: np.ndarray,
         labels: np.ndarray,

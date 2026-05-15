@@ -15,6 +15,13 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 
+def _unpack_logits(outputs):
+    """Support models that return (logits, features)."""
+    if isinstance(outputs, tuple):
+        return outputs[0]
+    return outputs
+
+
 class Trainer:
     """
     Model trainer with support for uncertainty and triage evaluation
@@ -46,7 +53,9 @@ class Trainer:
         
         # Setup loss function
         self.criterion = self._create_criterion()
-        
+        self.criterion.to(device)
+        self._multilabel = self._is_multilabel_loss()
+
         # Training state
         self.current_epoch = 0
         self.best_val_metric = 0.0
@@ -58,7 +67,29 @@ class Trainer:
         """Create optimizer from config"""
         opt_config = self.config['training']['optimizer']
         opt_type = opt_config['type'].lower()
-        
+
+        param_groups_cfg = opt_config.get('param_groups')
+        if param_groups_cfg and isinstance(param_groups_cfg, list):
+            groups = []
+            for g in param_groups_cfg:
+                entry = {'params': g['params'], 'lr': float(g['lr'])}
+                if 'weight_decay' in g:
+                    entry['weight_decay'] = float(g['weight_decay'])
+                else:
+                    entry['weight_decay'] = float(opt_config.get('weight_decay', 0.0))
+                groups.append(entry)
+            betas = tuple(opt_config.get('betas', (0.9, 0.999)))
+            if opt_type == 'adam':
+                return optim.Adam(groups, betas=betas)
+            if opt_type == 'adamw':
+                return optim.AdamW(groups, betas=betas)
+            if opt_type == 'sgd':
+                return optim.SGD(
+                    groups,
+                    momentum=float(opt_config.get('momentum', 0.9)),
+                )
+            raise ValueError(f"Unknown optimizer: {opt_type}")
+
         if opt_type == 'adam':
             optimizer = optim.Adam(
                 self.model.parameters(),
@@ -112,6 +143,11 @@ class Trainer:
             scheduler = None
         
         return scheduler
+
+    def _is_multilabel_loss(self) -> bool:
+        loss_config = self.config['training']['loss']
+        loss_type = loss_config['type'].lower()
+        return loss_type in ('weighted_binary_cross_entropy', 'bce_with_logits', 'binary_cross_entropy')
     
     def _create_criterion(self) -> nn.Module:
         """Create loss function"""
@@ -119,9 +155,26 @@ class Trainer:
         loss_type = loss_config['type'].lower()
         
         if loss_type == 'cross_entropy':
-            criterion = nn.CrossEntropyLoss(
-                label_smoothing=loss_config.get('label_smoothing', 0.0)
-            )
+            weight = loss_config.get('class_weights')
+            if weight is not None:
+                w = torch.tensor(weight, dtype=torch.float32)
+                criterion = nn.CrossEntropyLoss(
+                    weight=w,
+                    label_smoothing=loss_config.get('label_smoothing', 0.0),
+                )
+            else:
+                criterion = nn.CrossEntropyLoss(
+                    label_smoothing=loss_config.get('label_smoothing', 0.0)
+                )
+        elif loss_type in ('weighted_binary_cross_entropy', 'bce_with_logits', 'binary_cross_entropy'):
+            num_classes = self.config['dataset']['num_classes']
+            lw = loss_config.get('class_weights')
+            pw = float(loss_config.get('pos_weight', 1.0))
+            if lw is not None:
+                pos_w = torch.tensor(lw, dtype=torch.float32) * pw
+            else:
+                pos_w = torch.full((num_classes,), pw, dtype=torch.float32)
+            criterion = nn.BCEWithLogitsLoss(pos_weight=pos_w)
         else:
             criterion = nn.CrossEntropyLoss()
         
@@ -152,7 +205,11 @@ class Trainer:
             # Forward pass
             self.optimizer.zero_grad()
             outputs = self.model(images)
-            loss = self.criterion(outputs, labels)
+            logits = _unpack_logits(outputs)
+            if self._multilabel:
+                loss = self.criterion(logits, labels.float())
+            else:
+                loss = self.criterion(logits, labels)
             
             # Backward pass
             loss.backward()
@@ -189,6 +246,7 @@ class Trainer:
         
         all_predictions = []
         all_labels = []
+        all_logits = []
         
         for images, labels in tqdm(val_loader, desc="Validation"):
             images = images.to(self.device)
@@ -196,30 +254,63 @@ class Trainer:
             
             # Forward pass
             outputs = self.model(images)
-            loss = self.criterion(outputs, labels)
-            
-            # Get predictions
-            predictions = outputs.argmax(dim=1)
+            logits = _unpack_logits(outputs)
+            if self._multilabel:
+                loss = self.criterion(logits, labels.float())
+                probs = torch.sigmoid(logits)
+                predictions = (probs > 0.5).float()
+            else:
+                loss = self.criterion(logits, labels)
+                predictions = logits.argmax(dim=1)
             
             # Collect results
             total_loss += loss.item()
             num_batches += 1
             all_predictions.append(predictions.cpu().numpy())
             all_labels.append(labels.cpu().numpy())
+            all_logits.append(logits.cpu().numpy())
         
         # Compute metrics
         avg_loss = total_loss / num_batches
         all_predictions = np.concatenate(all_predictions)
         all_labels = np.concatenate(all_labels)
+        all_logits = np.concatenate(all_logits, axis=0)
         
-        accuracy = (all_predictions == all_labels).mean()
-        
-        metrics = {
-            'accuracy': float(accuracy),
-            'loss': float(avg_loss)
-        }
+        if self._multilabel:
+            # Exact label-set match (strict multi-label accuracy)
+            accuracy = (all_predictions == all_labels).all(axis=1).mean()
+            metrics = self._multilabel_auc_metrics(all_labels, all_logits)
+            metrics['accuracy'] = float(accuracy)
+            metrics['loss'] = float(avg_loss)
+        else:
+            accuracy = (all_predictions == all_labels).mean()
+            metrics = {
+                'accuracy': float(accuracy),
+                'loss': float(avg_loss)
+            }
         
         return avg_loss, metrics
+
+    def _multilabel_auc_metrics(self, y_true: np.ndarray, y_logits: np.ndarray) -> Dict[str, float]:
+        """Per-class and mean AUROC for multi-label (skip degenerate columns)."""
+        from sklearn.metrics import roc_auc_score
+        y_score = 1.0 / (1.0 + np.exp(-y_logits))
+        aucs = []
+        auc_indices = []
+        for c in range(y_true.shape[1]):
+            col_y = y_true[:, c]
+            if len(np.unique(col_y)) < 2:
+                continue
+            try:
+                aucs.append(roc_auc_score(col_y, y_score[:, c]))
+                auc_indices.append(c)
+            except ValueError:
+                continue
+        mean_auc = float(np.mean(aucs)) if aucs else float('nan')
+        out: Dict[str, float] = {'auc_macro': mean_auc}
+        for c, a in zip(auc_indices, aucs):
+            out[f'auc_class_{c}'] = float(a)
+        return out
     
     def train(
         self,
@@ -239,7 +330,16 @@ class Trainer:
             num_epochs = self.config['training']['num_epochs']
         
         logger.info(f"Starting training for {num_epochs} epochs")
-        
+
+        es_cfg = self.config.get('training', {}).get('early_stopping', {})
+        es_enable = bool(es_cfg.get('enable', False))
+        es_patience = int(es_cfg.get('patience', 5))
+        es_min_delta = float(es_cfg.get('min_delta', 0.0))
+        monitor = str(es_cfg.get('monitor_metric', 'accuracy')).lower()
+        es_mode = str(es_cfg.get('mode', 'max')).lower()
+        epochs_no_improve = 0
+        best_monitor = float('-inf') if es_mode == 'max' else float('inf')
+
         for epoch in range(num_epochs):
             self.current_epoch = epoch
             
@@ -272,6 +372,37 @@ class Trainer:
                 self.best_val_metric = val_metrics['accuracy']
                 self.save_checkpoint('best_model.pt')
                 logger.info(f"Saved best model with accuracy: {self.best_val_metric:.4f}")
+
+            save_every = self.config.get('checkpoint', {}).get('save_every_n_epochs')
+            if save_every and (epoch + 1) % int(save_every) == 0:
+                self.save_checkpoint(f'checkpoint_epoch_{epoch + 1}.pt')
+                logger.info(f"Saved periodic checkpoint at epoch {epoch + 1}")
+
+            if es_enable:
+                key = 'accuracy'
+                if monitor in ('val_accuracy', 'val_acc', 'accuracy'):
+                    key = 'accuracy'
+                cur = float(val_metrics.get(key, val_metrics['accuracy']))
+                improved = (
+                    cur > best_monitor + es_min_delta
+                    if es_mode == 'max'
+                    else cur < best_monitor - es_min_delta
+                )
+                if improved:
+                    best_monitor = cur
+                    epochs_no_improve = 0
+                else:
+                    epochs_no_improve += 1
+                if epochs_no_improve >= es_patience:
+                    ck_path = Path(self.config['paths']['checkpoint_dir']) / 'best_model.pt'
+                    if ck_path.is_file():
+                        self.load_checkpoint('best_model.pt')
+                        logger.info(
+                            "Early stopping after %s epochs without improvement (patience=%s)",
+                            epochs_no_improve,
+                            es_patience,
+                        )
+                    break
         
         logger.info("Training completed")
     
@@ -296,7 +427,7 @@ class Trainer:
     def load_checkpoint(self, filename: str):
         """Load model checkpoint"""
         checkpoint_dir = Path(self.config['paths']['checkpoint_dir'])
-        checkpoint = torch.load(checkpoint_dir / filename)
+        checkpoint = torch.load(checkpoint_dir / filename, map_location=self.device, weights_only=False)
         
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
